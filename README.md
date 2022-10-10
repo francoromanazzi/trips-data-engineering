@@ -1,10 +1,14 @@
 # trips-data-engineering
-> Sample ETL project using Python, Airflow, Postgres & Docker
+> Sample ETL project using Python, Airflow, Postgres & Docker for a trips dataset
 
 ## Requirements
 * Docker v20.10+
 
 ## Usage
+##### Clone the repo
+```
+git clone https://github.com/francoromanazzi/trips-data-engineering.git
+```
 ##### Create .env file like this:
 ```
 POSTGRES_DB=airflow
