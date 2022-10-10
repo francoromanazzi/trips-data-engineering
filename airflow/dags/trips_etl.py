@@ -71,20 +71,23 @@ def _transform_data(ti):
     # 3. dim_coordinate
     df_coordinate = pd.concat([df[['origin_coord']].rename(columns={"origin_coord":"coordinate"}), df[['destination_coord']].rename(columns={"destination_coord":"coordinate"})])
     df_coordinate = df_coordinate.drop_duplicates()
+    df_coordinate[['x', 'y']] = df_coordinate['coordinate'].apply(lambda x: pd.Series([x.split(' ')[1][1:], x.split(' ')[2][:-1]]))
+    print(df_coordinate)
     df_coordinate = df_coordinate.reset_index()
     df_coordinate = df_coordinate.rename(columns={"index":"id"})
     df_coordinate['id'] = df_coordinate.index
-    df_coordinate = df_coordinate.coordinate.apply(lambda x: pd.Series([x.split(' ')[1][1:], x.split(' ')[2][:-1]]))
     print(df_coordinate)
-    df_coordinate.to_csv('/tmp/dim_coordinate.csv', index=None)
 
     df = df.merge(df_coordinate, left_on=['origin_coord'], right_on=['coordinate'])
-    df = df.drop(['origin_coord', 'coordinate'], axis=1)
+    df = df.drop(['origin_coord', 'coordinate', 'x', 'y'], axis=1)
     df = df.rename(columns={"id": "origin_coord_id"})
 
     df = df.merge(df_coordinate, left_on=['destination_coord'], right_on=['coordinate'])
-    df = df.drop(['destination_coord', 'coordinate'], axis=1)
+    df = df.drop(['destination_coord', 'coordinate', 'x', 'y'], axis=1)
     df = df.rename(columns={"id": "destination_coord_id"})
+
+    df_coordinate = df_coordinate.drop('coordinate', axis=1)
+    df_coordinate.to_csv('/tmp/dim_coordinate.csv', index=None)
 
     print(df)
 
@@ -123,25 +126,25 @@ with DAG('trips_pipeline', default_args=default_args, schedule_interval=None, ca
 
     )
 
-    # Task #3 - Truncate DW tables
-    truncate_dw_tables = PostgresOperator(
-        task_id = 'create_table',
+    # Task #3 - Truncate postgres tables
+    truncate_tables = PostgresOperator(
+        task_id = 'truncate_tables',
         postgres_conn_id='postgres',
         sql='''
-            TRUNCATE TABLE dim_region;
-            TRUNCATE TABLE dim_datetime;
-            TRUNCATE TABLE dim_datasource;
-            TRUNCATE TABLE dim_coordinate;
-            TRUNCATE TABLE fact_trip;
+            TRUNCATE TABLE dim_region CASCADE;
+            TRUNCATE TABLE dim_datetime CASCADE;
+            TRUNCATE TABLE dim_datasource CASCADE;
+            TRUNCATE TABLE dim_coordinate CASCADE;
+            TRUNCATE TABLE fact_trip CASCADE;
         '''
     )
 
-    # Dag #5 - Load data
+    # Task #4 - Load data into Postgres
     load_data = PythonOperator(
-        task_id = 'load_data',
+        task_id = 'load_trips',
         python_callable=_load_data
 
     )
 
     # Dependencies
-    extract_data >> transform_data >> truncate_dw_tables >> load_data
+    extract_data >> transform_data >> truncate_tables >> load_data
