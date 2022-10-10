@@ -31,16 +31,8 @@ x-airflow-common:
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    AIRFLOW_CONN_GDRIVE:
-      conn_type: http
-      host: "https://drive.google.com"
-    AIRFLOW_CONN_POSTGRES:
-      conn_type: postgres
-      host: $POSTGRES_HOST
-      login: $POSTGRES_USER
-      password: $POSTGRES_PASSWORD
-      port: $POSTGRES_PORT
-      schema: $POSTGRES_DW_DB
+    AIRFLOW_CONN_GDRIVE: '{"conn_type": "http", "host": "https://drive.google.com"}'
+    AIRFLOW_CONN_POSTGRES: '{"conn_type": "postgres", "host": "$POSTGRES_HOST", "login": "$POSTGRES_USER", "password": "$POSTGRES_PASSWORD", "port": "$POSTGRES_PORT", "schema": "$POSTGRES_DW_DB"}'
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/logs:/opt/airflow/logs
