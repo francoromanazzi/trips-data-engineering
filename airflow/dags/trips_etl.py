@@ -68,7 +68,7 @@ def _transform_data(ti):
     df = df.rename(columns={"id": "datasource_id"})
     print(df)
 
-    # 3. dim_coordinate
+    # 4. dim_coordinate
     df_coordinate = pd.concat([df[['origin_coord']].rename(columns={"origin_coord":"coordinate"}), df[['destination_coord']].rename(columns={"destination_coord":"coordinate"})])
     df_coordinate = df_coordinate.drop_duplicates()
     df_coordinate[['x', 'y']] = df_coordinate['coordinate'].apply(lambda x: pd.Series([x.split(' ')[1][1:], x.split(' ')[2][:-1]]))
@@ -91,7 +91,7 @@ def _transform_data(ti):
 
     print(df)
 
-    # Export DataFrame to CSV
+    # 5. fact_trip
     df.to_csv('/tmp/fact_trip.csv', index=None)
 
 
