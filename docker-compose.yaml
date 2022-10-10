@@ -36,7 +36,7 @@ x-airflow-common:
       host: "https://drive.google.com"
     AIRFLOW_CONN_POSTGRES:
       conn_type: postgres
-      host: "https://drive.google.com"
+      host: $POSTGRES_HOST
       login: $POSTGRES_USER
       password: $POSTGRES_PASSWORD
       port: $POSTGRES_PORT
