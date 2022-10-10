@@ -26,5 +26,12 @@ CREATE TABLE fact_trip (
     datetime_id INT REFERENCES dim_datetime,
     datasource_id INT REFERENCES dim_datasource,
     origin_coord_id INT REFERENCES dim_coordinate,
-    destination_coord_id INT REFERENCES dim_coordinate
+    destination_coord_id INT REFERENCES dim_coordinate,
+    PRIMARY KEY (
+        region_id,
+        datetime_id,
+        datasource_id,
+        origin_coord_id,
+        destination_coord_id
+    )
 );
