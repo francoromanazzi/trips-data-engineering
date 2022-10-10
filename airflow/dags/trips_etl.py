@@ -20,8 +20,10 @@ default_args = {
 
 
 def _transform_data(ti):
-    data = ti.xcom_pull(task_ids = 'extract_trips') # Extract the csv data from XCom
+    # Extract the csv data from XCom
+    data = ti.xcom_pull(task_ids = 'extract_trips') 
 
+    # Load it into a pandas dataframe
     df = pd.read_csv(StringIO(data))
 
     # Remove duplicates
@@ -72,7 +74,6 @@ def _transform_data(ti):
     df_coordinate = pd.concat([df[['origin_coord']].rename(columns={"origin_coord":"coordinate"}), df[['destination_coord']].rename(columns={"destination_coord":"coordinate"})])
     df_coordinate = df_coordinate.drop_duplicates()
     df_coordinate[['x', 'y']] = df_coordinate['coordinate'].apply(lambda x: pd.Series([x.split(' ')[1][1:], x.split(' ')[2][:-1]]))
-    print(df_coordinate)
     df_coordinate = df_coordinate.reset_index()
     df_coordinate = df_coordinate.rename(columns={"index":"id"})
     df_coordinate['id'] = df_coordinate.index
@@ -111,19 +112,19 @@ with DAG('trips_pipeline', default_args=default_args, schedule_interval=None, ca
 
     # Task #1 - Extract Data
     extract_data = SimpleHttpOperator(
-            task_id = 'extract_trips',
-            http_conn_id='gdrive',
-            method='GET',
-            endpoint="uc?id=14JcOSJAWqKOUNyadVZDPm7FplA7XYhrU",
-            response_filter=lambda response: response.text,
-            log_response=True
+        task_id = 'extract_trips',
+        http_conn_id='gdrive',
+        method='GET',
+        endpoint="uc?id=14JcOSJAWqKOUNyadVZDPm7FplA7XYhrU",
+        response_filter=lambda response: response.text,
+        log_response=True
     )
+
 
     # Task #2 - Transform data
     transform_data = PythonOperator(
         task_id = 'transform_trips',
         python_callable=_transform_data
-
     )
 
     # Task #3 - Truncate postgres tables
@@ -143,7 +144,6 @@ with DAG('trips_pipeline', default_args=default_args, schedule_interval=None, ca
     load_data = PythonOperator(
         task_id = 'load_trips',
         python_callable=_load_data
-
     )
 
     # Dependencies
