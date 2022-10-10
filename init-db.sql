@@ -1,4 +1,5 @@
 CREATE DATABASE trips;
+\c trips;
 
 CREATE TABLE dim_region (
 	id INT PRIMARY KEY,
